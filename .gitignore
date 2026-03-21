@@ -1,8 +1,2 @@
-*
-
-!module/customize.sh
-!src/
-!.gitignore
-!LICENSE
-!Makefile
-!README.md
+build/
+*.zip
