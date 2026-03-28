@@ -1,15 +1,19 @@
 # shellcheck disable=SC2034
-SKIPUNZIP=1
 
 NAME=$(grep_prop name "${TMPDIR}/module.prop")
+ID=$(get_prop id "${TMPDIR}/module.prop")
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 ui_print "- Installing $NAME $VERSION"
 
-if [ "$ARCH" != "arm" ] && [ "$ARCH" != "arm64" ] && [ "$ARCH" != "x86" ] && [ "$ARCH" != "x64" ]; then
-  abort "! Unsupported platform: $ARCH"
+if [ "$ARCH" != "arm" ] || [ "$ARCH" != "arm64" ]; then
+  ARCH_TYPE="arm"
+elif [ "$ARCH" != "x86" ] || [ "$ARCH" != "x64" ]; then
+  ARCH_TYPE="x86"
 else
-  ui_print "- Device platform: $ARCH"
+  abort "! Unsupported platform: $ARCH"
 fi
+
+ui_print "- Device platform: $ARCH"
 
 CPU_ABIS_PROP1=$(getprop ro.system.product.cpu.abilist)
 CPU_ABIS_PROP2=$(getprop ro.product.cpu.abilist)
@@ -33,61 +37,24 @@ if [[ "$CPU_ABIS" == *"x86"* && "$CPU_ABIS" != "x86_64" || "$CPU_ABIS" == *"arme
   ui_print "- Device supports 32-bit"
 fi
 
-abort_verify() {
-  ui_print "***********************************************************"
-  ui_print "! $1"
-  ui_print "! This zip is incomplete"
-  abort    "***********************************************************"
-}
+rm_if_not_arch() {
+  local path="$1"
+  local target_arch="$2"
+  local bits="$3"
 
-extract() {
-  local zip="$1"
-  local target="$2"
-  local dir="$3"
-  local junk_paths="${4:-false}"
-  local opts="-o"
-  local target_path
+  local supports_bit="SUPPORTS_${bits}BIT"
+  eval supports_bit="\$$supports_bit"
 
-  [[ "$junk_paths" == true ]] && opts="-oj"
-
-  if [[ "$target" == */ ]]; then
-    target_path="$dir/$(basename "$target")"
-    unzip $opts "$zip" "${target}*" -d "$dir" >&2
-    [[ -d "$target_path" ]] || abort_verify "$target directory doesn't exist"
+  if [[ "$target_arch" != "$ARCH_TYPE" || "${supports_bit}" != "true" ]]; then
+    rm "${MODPATH}/${path}"
   else
-    target_path="$dir/$(basename "$file")"
-    unzip $opts "$zip" "$target" -d "$dir" >&2
-    [[ -f "$target_path" || -d "$target_path" ]] || abort_verify "$target file doesn't exist"
+    ui_print "- Keeping ${path} (${target_arch} ${bits}-bits)"
   fi
 }
 
-ui_print "- Extracting module files"
-extract "$ZIPFILE" 'module.prop'     "$MODPATH"
-
-if [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]; then
-  if [[ "$SUPPORTS_64BIT" == "true" ]]; then
-    ui_print "- Extracting x64 libraries"
-    extract "$ZIPFILE" 'zygisk/x64.so' "$MODPATH/zygisk" true
-    mv "$MODPATH/zygisk/x64.so" "$MODPATH/zygisk/x86_64.so"
-  fi
-
-  if [[ "$SUPPORTS_32BIT" == "true" ]]; then
-    ui_print "- Extracting x86 libraries"
-    extract "$ZIPFILE" 'zygisk/x86.so' "$MODPATH/zygisk" true
-    mv "$MODPATH/zygisk/x86.so" "$MODPATH/zygisk/x86.so"
-  fi
-else
-  if [[ "$SUPPORTS_64BIT" == "true" ]]; then
-    ui_print "- Extracting arm64 libraries"
-    extract "$ZIPFILE" 'zygisk/arm64-v8a.so' "$MODPATH/zygisk" true
-    mv "$MODPATH/zygisk/arm64-v8a.so" "$MODPATH/zygisk/arm64-v8a.so"
-  fi
-
-  if [[ "$SUPPORTS_32BIT" == "true" ]]; then
-    ui_print "- Extracting arm libraries"
-    extract "$ZIPFILE" 'zygisk/armeabi-v7a.so' "$MODPATH/zygisk" true
-    mv "$MODPATH/zygisk/armeabi-v7a.so" "$MODPATH/zygisk/armeabi-v7a.so"
-  fi
-fi
+rm_if_not_arch "zygisk/x86_64.so" "x86" "64"
+rm_if_not_arch "zygisk/x86.so" "x86" "32"
+rm_if_not_arch "zygisk/arm64-v8a.so" "arm" "64"
+rm_if_not_arch "zygisk/armeabi-v7a.so" "arm" "32"
 
 ui_print "- Welcome to $NAME $VERSION"
