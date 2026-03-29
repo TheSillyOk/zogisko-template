@@ -42,6 +42,7 @@ those are triggered by it on each stage:
  * .postServerSpecialize: Called after system_server is specialized; runs with system-level privileges.
 */
 void pre_app_specialize(void *mod_data, struct AppSpecializeArgs *args) {
+  (void) mod_data;
   char *process = get_string_data(java_env, args->nice_name);
   pre_specialize(process);
   free((void*)process);
@@ -52,6 +53,7 @@ void post_app_specialize(void *mod_data, const struct AppSpecializeArgs *args) {
 }
 
 void pre_server_specialize(void *mod_data, struct ServerSpecializeArgs *args) {
+  (void) mod_data; (void) args;
   pre_specialize("system_server");
 }
 

@@ -15,7 +15,7 @@ else
 	TYPE_CFLAGS = -O3 -ffast-math -flto -fvisibility=hidden -Wl,-s -Wl,--gc-sections
 endif
 
-CFLAGS = -Wall
+CFLAGS = -Wall -Wextra -nostartfiles
 
 # Zygisk related variables
 ZYGISK_FILES := src/main.c
