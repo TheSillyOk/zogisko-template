@@ -1,8 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <stdlib.h>
-
 #include <android/log.h>
 #include <errno.h>
 

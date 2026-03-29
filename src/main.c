@@ -1,12 +1,6 @@
-#include <string.h>
-#include <limits.h>
-#include <stdio.h>
-
-#include <dirent.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "zygisk.h"
 
@@ -16,8 +10,6 @@
 
 struct api_table *api_table;
 JNIEnv *java_env;
-
-jclass entrypoint;
 
 char *get_string_data(JNIEnv *env, jstring *value) {
   const char *str = (*env)->GetStringUTFChars(env, *value, 0);
