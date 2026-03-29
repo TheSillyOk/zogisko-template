@@ -44,6 +44,7 @@ those are triggered by it on each stage:
 void pre_app_specialize(void *mod_data, struct AppSpecializeArgs *args) {
   char *process = get_string_data(java_env, args->nice_name);
   pre_specialize(process);
+  free((void*)process);
 }
 
 void post_app_specialize(void *mod_data, const struct AppSpecializeArgs *args) {
