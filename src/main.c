@@ -41,6 +41,8 @@ void pre_specialize(const char *process) {
   read(fd, &n, sizeof(n)); // also get saved number
   write(fd, &n, sizeof(n)); // reply back to companion
 
+  close(fd);
+
   LOGI("process=[%s], r=[%u], n=[%u]", process, r, n);
 
   // Since we do not hook any functions, we should let Zygisk dlclose ourselves
