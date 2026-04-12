@@ -84,6 +84,7 @@ void zygisk_module_entry(struct api_table *table, JNIEnv *env) {
 
   static struct module_abi abi = {
     .api_version = 5,
+    .impl = (void *)"zygisk_example",
     .preAppSpecialize = pre_app_specialize,
     .postAppSpecialize = post_app_specialize,
     .preServerSpecialize = pre_server_specialize,
