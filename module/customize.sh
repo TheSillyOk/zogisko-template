@@ -1,7 +1,7 @@
 # shellcheck disable=SC2034
 
 NAME=$(grep_prop name "${TMPDIR}/module.prop")
-ID=$(get_prop id "${TMPDIR}/module.prop")
+ID=$(grep_prop id "${TMPDIR}/module.prop")
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 ui_print "- Installing $NAME $VERSION"
 
